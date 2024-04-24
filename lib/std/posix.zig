@@ -1978,8 +1978,10 @@ pub fn getenvZ(key: [*:0]const u8) ?[:0]const u8 {
 }
 
 pub const GetCwdError = error{
-    NameTooLong,
+    AccessDenied,
     CurrentWorkingDirectoryUnlinked,
+    NameTooLong,
+    SystemResources,
 } || UnexpectedError;
 
 /// The result is a slice of out_buffer, indexed from 0.
@@ -2005,7 +2007,9 @@ pub fn getcwd(out_buffer: []u8) GetCwdError![]u8 {
         .FAULT => unreachable,
         .INVAL => unreachable,
         .NOENT => return error.CurrentWorkingDirectoryUnlinked,
-        .RANGE => return error.NameTooLong,
+        .RANGE, .NAMETOOLONG => return error.NameTooLong,
+        .ACCES => return error.AccessDenied,
+        .NOMEM => return error.SystemResources,
         else => return unexpectedErrno(err),
     }
 }
